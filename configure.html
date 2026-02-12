@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configure & Checkout - Xorvila HUB</title>
+    
+    <!-- SECURITY: Auth Guard (Check agar user logged in hai) -->
+    <script src="auth-guard.js"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* --- Ultimate Theme Variables --- */
+        :root {
+            --brand-orange: #ff9900;
+            --brand-black: #050505;
+            --brand-dark: #111;
+            --brand-border: #333;
+        }
+
+        body {
+            background-color: var(--brand-black);
+            color: #e5e5e5;
+            font-family: 'Inter', sans-serif;
+            background-image: radial-gradient(circle at 50% 0%, #1a1a1a 0%, transparent 70%);
+        }
+
+        .hub-box {
+            background: linear-gradient(135deg, #ff9900 0%, #ffb700 100%);
+            color: black;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 900;
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        /* --- Steps Indicator --- */
+        .step-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            border: 1px solid var(--brand-border);
+            background: var(--brand-dark);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            font-size: 0.85rem;
+            color: #666;
+            border-right: 1px solid #222;
+            background: #0a0a0a;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .step.active {
+            color: white;
+            font-weight: bold;
+            background: #151515;
+        }
+        .step.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--brand-orange);
+        }
+
+        /* --- Forms --- */
+        .form-input, .form-select {
+            width: 100%;
+            background: #080808;
+            border: 1px solid var(--brand-border);
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .form-input:focus, .form-select:focus {
+            border-color: var(--brand-orange);
+        }
+
+        /* --- Buttons --- */
+        .btn-glow {
+            background: var(--brand-orange);
+            color: black;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 12px 24px;
+            border-radius: 6px;
+            width: 100%;
+            transition: 0.3s;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-glow:hover {
+            box-shadow: 0 0 20px rgba(255, 153, 0, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--brand-border);
+            color: #ccc;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 6px;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .btn-secondary:hover {
+            border-color: var(--brand-orange);
+            color: var(--brand-orange);
+        }
+
+        .btn-danger { background: #dc2626; color: white; padding: 4px 12px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+        .btn-edit { background: #4f46e5; color: white; padding: 4px 12px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-right: 5px; }
+
+        /* --- Cart Box & Warning --- */
+        .cart-box {
+            background: var(--brand-dark);
+            border: 1px solid var(--brand-border);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        .warning-box {
+            background: rgba(255, 153, 0, 0.1);
+            border-left: 4px solid var(--brand-orange);
+            color: #e5e5e5;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            border-radius: 4px;
+        }
+
+        /* --- Review Table --- */
+        .review-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 1px solid var(--brand-border);
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--brand-dark);
+        }
+        .review-table th {
+            background: #1a1a1a;
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 0.85rem;
+            color: #888;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .review-table td {
+            padding: 16px;
+            border-top: 1px solid #222;
+            color: #ddd;
+        }
+        .table-row-highlight {
+            background: #151515;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="border-b border-[#333] bg-black/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
+            <div class="cursor-pointer" onclick="window.location.href='index.html'">
+                <span class="text-2xl font-bold tracking-tight text-white">Xorvila<span class="hub-box">HUB</span></span>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="#" class="text-gray-400 hover:text-white"><i data-lucide="shopping-cart" class="w-5 h-5"></i></a>
+                <a href="login.html" class="bg-[#222] hover:bg-[#333] text-white px-4 py-2 rounded text-sm font-bold transition" id="nav-btn">Client Area</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="flex-grow pt-10 pb-20 px-4">
+        <div class="max-w-7xl mx-auto">
+            
+            <h1 class="text-2xl font-bold text-white mb-6" id="page-title">Configure Server</h1>
+
+            <!-- Steps -->
+            <div class="step-container">
+                <div class="step"><i data-lucide="check" class="w-4 h-4"></i> <span class="hidden sm:inline">Choose Plan</span></div>
+                <div class="step active" id="step-2-indicator"><i data-lucide="settings" class="w-4 h-4"></i> <span>Configuration</span></div>
+                <div class="step" id="step-3-indicator"><i data-lucide="file-text" class="w-4 h-4"></i> <span>Review & Checkout</span></div>
+                <div class="step"><i data-lucide="credit-card" class="w-4 h-4"></i> <span class="hidden sm:inline">Payment</span></div>
+            </div>
+
+            <!-- ================= STEP 2: CONFIGURATION ================= -->
+            <div id="step-config" class="flex flex-col lg:flex-row gap-8">
+                
+                <!-- Left: Form -->
+                <div class="flex-grow">
+                    <div class="bg-[#111] border border-[#333] rounded-lg p-6 lg:p-8">
+                        <h2 class="text-xl font-bold text-white mb-6 border-b border-[#333] pb-4">Configuration</h2>
+                        
+                        <div class="space-y-6">
+                            <!-- Billing Cycle -->
+                            <div>
+                                <label class="block mb-2 text-gray-400 text-sm font-bold">Term and Price</label>
+                                <select class="form-select" id="billing-cycle" onchange="updateTotal()">
+                                    <option value="1">1 Month @ $<span class="price-val">0.00</span></option>
+                                    <option value="3">3 Months @ $<span class="price-val-3">0.00</span> (5% Off)</option>
+                                    <option value="12">12 Months @ $<span class="price-val-12">0.00</span> (15% Off)</option>
+                                </select>
+                            </div>
+
+                            <!-- Config Options -->
+                            <div class="bg-[#0a0a0a] p-5 rounded border border-[#222] mt-4">
+                                <h3 class="text-white font-bold mb-4 text-sm border-b border-[#222] pb-2">Configurable Options</h3>
+                                
+                                <div class="mb-4">
+                                    <label class="block mb-2 text-gray-400 text-sm font-bold">Server Name</label>
+                                    <input type="text" class="form-input" id="server-name" placeholder="My Awesome Server">
+                                    <p class="text-xs text-[#ff9900] mt-1"><i data-lucide="help-circle" class="w-3 h-3 inline"></i> Name your server for the panel.</p>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="block mb-2 text-gray-400 text-sm font-bold">Server Location</label>
+                                    <select class="form-select" id="server-location">
+                                        <option value="Mumbai, India">Mumbai, India (Premium)</option>
+                                        <option value="Singapore">Singapore (Asia)</option>
+                                        <option value="Frankfurt, Germany">Frankfurt, Germany (EU)</option>
+                                        <option value="New York, USA">New York, USA (NA)</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block mb-2 text-gray-400 text-sm font-bold">Server Description (Optional)</label>
+                                    <input type="text" class="form-input" placeholder="Best SMP ever...">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-8 flex justify-end">
+                            <button class="btn-glow md:w-auto px-10" onclick="goToReview()">
+                                Continue <i data-lucide="arrow-right" class="w-4 h-4 ml-2 inline"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Cart Summary -->
+                <div class="w-full lg:w-1/3">
+                    <div class="cart-box sticky top-24">
+                        <h3 class="text-lg font-bold text-white mb-4 border-b border-[#333] pb-2">Your Cart</h3>
+                        
+                        <div class="warning-box">
+                            <i data-lucide="alert-circle" class="w-5 h-5 inline mr-1 mb-1"></i>
+                            <span class="font-bold">Note:</span> There are no items in your cart until you checkout.
+                        </div>
+
+                        <div class="flex justify-between items-center text-sm text-gray-400 mb-2">
+                            <span id="summary-plan-name">Loading...</span>
+                            <span id="summary-price">$0.00</span>
+                        </div>
+
+                        <div class="flex justify-between items-center text-lg font-bold text-white pt-4 border-t border-[#333] mt-4">
+                            <span>Total Due Today:</span>
+                            <span class="text-[#ff9900]" id="cart-total">$0.00</span>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <button class="w-full text-[#ff9900] text-sm hover:underline flex items-center justify-center">
+                                <i data-lucide="tag" class="w-3 h-3 mr-1"></i> Have a coupon?
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= STEP 3: REVIEW & CHECKOUT ================= -->
+            <div id="step-review" class="hidden">
+                <div class="flex flex-col lg:flex-row gap-8">
+                    
+                    <!-- Left: Review Table -->
+                    <div class="flex-grow">
+                        <div class="bg-[#111] border border-[#333] rounded-lg p-6">
+                            <h2 class="text-xl font-bold text-white mb-6">Review & Checkout</h2>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="review-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Description</th>
+                                            <th class="text-center w-24">Edit</th>
+                                            <th class="text-right w-32">Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="table-row-highlight">
+                                            <td>
+                                                <div class="font-bold text-white text-lg" id="review-plan-name">Minecraft Hosting</div>
+                                                <div class="text-sm text-gray-400 mt-1" id="review-plan-desc">
+                                                    Config: <span id="review-location" class="text-gray-300">Mumbai</span><br>
+                                                    Cycle: <span id="review-cycle" class="text-[#ff9900]">Monthly</span><br>
+                                                    <span class="text-xs text-gray-500 italic" id="review-dates">Feb 12, 2026 - Mar 12, 2026</span>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <button onclick="goBackToConfig()" class="btn-edit text-xs"><i data-lucide="edit-2" class="w-3 h-3"></i></button>
+                                                <button class="btn-danger text-xs"><i data-lucide="trash" class="w-3 h-3"></i></button>
+                                            </td>
+                                            <td class="text-right font-bold text-white text-lg" id="review-item-price">
+                                                $0.00
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="flex flex-col md:flex-row justify-between mt-8 gap-4">
+                                <button onclick="window.location.href='minecraft.html'" class="btn-secondary md:w-auto w-full text-center">
+                                    <i data-lucide="arrow-left" class="w-4 h-4 inline mr-2"></i> Order More Items
+                                </button>
+                                <div class="flex gap-4">
+                                    <button class="btn-secondary md:w-auto w-full">Empty Cart</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Final Totals -->
+                    <div class="w-full lg:w-1/3">
+                        <div class="cart-box sticky top-24">
+                            <h3 class="text-lg font-bold text-white mb-4">Order Summary</h3>
+                            
+                            <div class="flex justify-between text-sm text-gray-400 mb-2">
+                                <span>Subtotal</span>
+                                <span class="text-white" id="final-subtotal">$0.00</span>
+                            </div>
+                            <div class="flex justify-between text-sm text-gray-400 mb-4 border-b border-[#333] pb-4">
+                                <span>Tax (0%)</span>
+                                <span class="text-white">$0.00</span>
+                            </div>
+
+                            <div class="flex justify-between items-center text-xl font-bold text-white mb-2">
+                                <span>Total Due Today:</span>
+                                <span class="text-[#ff9900]" id="final-total">$0.00</span>
+                            </div>
+                            
+                             <div class="text-right text-xs text-gray-500 mb-6">
+                                Total Renewal: <span id="renewal-total">$0.00</span>
+                            </div>
+
+                            <button onclick="handleCheckout()" class="btn-glow">
+                                Checkout <i data-lucide="credit-card" class="w-4 h-4 ml-2 inline"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-black py-8 border-t border-[#222] text-center text-gray-600 text-sm">
+        &copy; 2026 Xorvila HUB. Secure 256-bit SSL Encrypted Checkout.
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // Retrieve Plan Details
+        const urlParams = new URLSearchParams(window.location.search);
+        const planName = urlParams.get('plan') || 'Minecraft Hosting';
+        const basePrice = parseFloat(urlParams.get('price')) || 10.00;
+
+        const elements = {
+            configSection: document.getElementById('step-config'),
+            reviewSection: document.getElementById('step-review'),
+            step2: document.getElementById('step-2-indicator'),
+            step3: document.getElementById('step-3-indicator'),
+            pageTitle: document.getElementById('page-title')
+        };
+
+        // Initialize Page
+        document.querySelectorAll('.price-val').forEach(el => el.innerText = basePrice.toFixed(2));
+        document.querySelectorAll('.price-val-3').forEach(el => el.innerText = (basePrice * 3 * 0.95).toFixed(2));
+        document.querySelectorAll('.price-val-12').forEach(el => el.innerText = (basePrice * 12 * 0.85).toFixed(2));
+        document.getElementById('summary-plan-name').innerText = planName;
+        updateTotal();
+
+        // Check Login Status for Nav
+        if (localStorage.getItem('xorvila_user')) {
+            const navBtn = document.getElementById('nav-btn');
+            navBtn.innerText = "Dashboard";
+            navBtn.classList.add('bg-[#ff9900]', 'text-black');
+            navBtn.classList.remove('bg-[#222]', 'text-white');
+        }
+
+        function updateTotal() {
+            const cycle = document.getElementById('billing-cycle').value;
+            let finalPrice = basePrice * cycle;
+            if(cycle == 3) finalPrice *= 0.95; 
+            if(cycle == 12) finalPrice *= 0.85; 
+            
+            const priceStr = '$' + finalPrice.toFixed(2);
+            document.getElementById('cart-total').innerText = priceStr;
+            document.getElementById('summary-price').innerText = priceStr;
+        }
+
+        function calculateDates(months) {
+            const today = new Date("2026-02-12"); 
+            const nextDate = new Date(today);
+            nextDate.setMonth(today.getMonth() + parseInt(months));
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return `${today.toLocaleDateString('en-US', options)} - ${nextDate.toLocaleDateString('en-US', options)}`;
+        }
+
+        function goToReview() {
+            const cycleVal = document.getElementById('billing-cycle').value;
+            const location = document.getElementById('server-location').value;
+            const serverName = document.getElementById('server-name').value || "Unnamed Server";
+            const priceText = document.getElementById('cart-total').innerText;
+
+            document.getElementById('review-plan-name').innerText = `${planName} - ${serverName}`;
+            document.getElementById('review-location').innerText = location;
+            document.getElementById('review-item-price').innerText = priceText;
+            document.getElementById('final-subtotal').innerText = priceText;
+            document.getElementById('final-total').innerText = priceText;
+            document.getElementById('renewal-total').innerText = priceText;
+            document.getElementById('review-dates').innerText = calculateDates(cycleVal);
+
+            let cycleName = "Monthly";
+            if(cycleVal == 3) cycleName = "Quarterly";
+            if(cycleVal == 12) cycleName = "Annually";
+            document.getElementById('review-cycle').innerText = cycleName;
+
+            elements.configSection.classList.add('hidden');
+            elements.reviewSection.classList.remove('hidden');
+            elements.step2.classList.remove('active');
+            elements.step2.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> <span>Configuration</span>`;
+            elements.step3.classList.add('active');
+            elements.pageTitle.innerText = "Review & Checkout";
+            window.scrollTo(0,0);
+            lucide.createIcons();
+        }
+
+        function goBackToConfig() {
+            elements.reviewSection.classList.add('hidden');
+            elements.configSection.classList.remove('hidden');
+            elements.step3.classList.remove('active');
+            elements.step2.classList.add('active');
+            elements.pageTitle.innerText = "Configure Server";
+            window.scrollTo(0,0);
+        }
+
+        function handleCheckout() {
+            const isLoggedIn = localStorage.getItem('xorvila_user');
+            if (isLoggedIn) {
+                alert("Processing Payment... (Success!)");
+            } else {
+                // Redirect to Auth with Return URL
+                window.location.href = 'auth.html?returnUrl=' + encodeURIComponent(window.location.href);
+            }
+        }
+    </script>
+</body>
+</html>
+
+
